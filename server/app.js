@@ -9,17 +9,26 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import Database from "./config/database.js";
+import morgan from "morgan";
+import userRoutes from "./routes/user.route.js";
 
 const PORT = process.env.PORT || 4000;
-
 const app = express();
-app.use(cors());
-
 const db = new Database(process.env.MONGODB_URI);
+
+app.use(cors());
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.get("/server-status", (req, res) => {
+  res.status(200).json({ message: "Server is up and running!" });
+});
 
 db.connect().catch((error) =>
   console.error("Error connecting to database: ", error)
 );
+
+app.use("/users", userRoutes);
 
 process.on("SIGINT", async () => {
   try {
